@@ -12,13 +12,11 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
 using System.Xml.Linq;
-//using Excel = Microsoft.Office.Interop.Excel;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace RH_RTC_Grab
 {
@@ -353,6 +351,7 @@ namespace RH_RTC_Grab
                             }
                             webBrowser.Document.Window.ScrollTo(185, webBrowser.Document.Body.ScrollRectangle.Height);
                             webBrowser.Document.Body.Style = "zoom:.99";
+                            webBrowser.Document.GetElementsByTagName("input").GetElementsByName("acode")[0].Focus();
                             webBrowser.Visible = true;
                             label_brand.Visible = false;
                             pictureBox_loader.Visible = false;
@@ -431,11 +430,18 @@ namespace RH_RTC_Grab
                     string datetime_register = xe.Attribute("joined").Value.Trim();
                     string player_ldd = await ___PlayerListLastDepositAsync(player_id);
                     string playerlist_cn = xe.Attribute("contact").Value.Replace("+", "").Trim();
+                    if (!String.IsNullOrEmpty(playerlist_cn.ToString()))
+                    {
+                        if (playerlist_cn.Substring(0, 2) == "84")
+                        {
+                            playerlist_cn = playerlist_cn.Substring(2);
+                        }
+                    }
                     string playerlist_ea = xe.Attribute("email").Value.Trim();
                     string agent = "";
                     string playerlist_qq = "";
 
-                    if (username != Properties.Settings.Default.______last_registered_player)
+                    if (username.ToLower() != Properties.Settings.Default.______last_registered_player.ToLower())
                     {
                         if (i == 0)
                         {
@@ -626,7 +632,7 @@ namespace RH_RTC_Grab
                         ["date_register"] = date_register,
                         ["date_deposit"] = date_deposit,
                         ["contact"] = contact,
-                        ["email"] = email.ToLower() ,
+                        ["email"] = email,
                         ["agent"] = agent,
                         ["qq"] = qq,
                         ["wc"] = "",
@@ -634,7 +640,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/sendRTC", "POST", data);
+                    var response = wb.UploadValues("http://192.168.10.252:8080/API/sendRTC", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
 
                     using (StreamWriter file = new StreamWriter(Path.GetTempPath() + @"\rtcgrab_rh.txt", true, Encoding.UTF8))
@@ -669,7 +675,7 @@ namespace RH_RTC_Grab
         {
             try
             {
-                string password = username + date_register + "youdieidie";
+                string password = username.ToLower() + date_register + "youdieidie";
                 byte[] encodedPassword = new UTF8Encoding().GetBytes(password);
                 byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encodedPassword);
                 string token = BitConverter.ToString(hash)
@@ -693,7 +699,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/sendRTC", "POST", data);
+                    var response = wb.UploadValues("http://zeus.ssitex.com:8080/API/sendRTC", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
 
                     using (StreamWriter file = new StreamWriter(Path.GetTempPath() + @"\rtcgrab_rh.txt", true, Encoding.UTF8))
@@ -793,9 +799,6 @@ namespace RH_RTC_Grab
                 }
 
                 label_player_last_registered.Text = "Last Registered: " + Properties.Settings.Default.______last_registered_player;
-                Properties.Settings.Default.______last_registered_player = "phaivuotquA";
-                Properties.Settings.Default.______last_registered_player_deposit = "phaivuotquA";
-                label_player_last_registered.Text = "Last Registered: " + Properties.Settings.Default.______last_registered_player;
             }
             catch (Exception err)
             {
@@ -818,7 +821,7 @@ namespace RH_RTC_Grab
 
         private void ___SavePlayerLastRegistered(string username)
         {
-            Properties.Settings.Default.______last_registered_player = username;
+            Properties.Settings.Default.______last_registered_player = username.ToLower();
             Properties.Settings.Default.Save();
         }
 
@@ -865,7 +868,7 @@ namespace RH_RTC_Grab
                     string username = xe.Attribute("username").Value.Trim();
                     string player_ldd = "";
 
-                    if (username == Properties.Settings.Default.______last_registered_player)
+                    if (username.ToLower() == Properties.Settings.Default.______last_registered_player.ToLower())
                     {
                         __detectInsert_deposit = true;
                     }
@@ -900,7 +903,7 @@ namespace RH_RTC_Grab
                         }
                     }
                     
-                    if (username != Properties.Settings.Default.______last_registered_player_deposit)
+                    if (username.ToLower() != Properties.Settings.Default.______last_registered_player_deposit.ToLower())
                     {
                         if (__detectInsert_deposit)
                         {
@@ -1061,7 +1064,7 @@ namespace RH_RTC_Grab
         {
             try
             {
-                string password = username + last_deposit_date + "youdieidie";
+                string password = username.ToLower() + last_deposit_date + "youdieidie";
                 byte[] encodedPassword = new UTF8Encoding().GetBytes(password);
                 byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encodedPassword);
                 string token = BitConverter.ToString(hash)
@@ -1078,7 +1081,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/sendRTCdep", "POST", data);
+                    var response = wb.UploadValues("http://192.168.10.252:8080/API/sendRTCdep", "POST", data);
                 }
             }
             catch (Exception err)
@@ -1107,7 +1110,7 @@ namespace RH_RTC_Grab
         {
             try
             {
-                string password = username + last_deposit_date + "youdieidie";
+                string password = username.ToLower() + last_deposit_date + "youdieidie";
                 byte[] encodedPassword = new UTF8Encoding().GetBytes(password);
                 byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encodedPassword);
                 string token = BitConverter.ToString(hash)
@@ -1124,7 +1127,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/sendRTCdep", "POST", data);
+                    var response = wb.UploadValues("http://zeus.ssitex.com:8080/API/sendRTCdep", "POST", data);
                 }
             }
             catch (Exception err)
@@ -1359,7 +1362,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    byte[] result = await wb.UploadValuesTaskAsync("http://192.168.10.252:8080/zeus2/API/lastRTCrecord", "POST", data);
+                    byte[] result = await wb.UploadValuesTaskAsync("http://192.168.10.252:8080/API/lastRTCrecord", "POST", data);
                     string responsebody = Encoding.UTF8.GetString(result);
                     var deserializeObject = JsonConvert.DeserializeObject(responsebody);
                     JObject jo = JObject.Parse(deserializeObject.ToString());
@@ -1410,7 +1413,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var result = await wb.UploadValuesTaskAsync("http://192.168.10.252:8080/zeus2/API/lastRTCrecord", "POST", data);
+                    var result = await wb.UploadValuesTaskAsync("http://zeus.ssitex.com:8080/API/lastRTCrecord", "POST", data);
                     string responsebody = Encoding.UTF8.GetString(result);
                     var deserializeObject = JsonConvert.DeserializeObject(responsebody);
                     JObject jo = JObject.Parse(deserializeObject.ToString());
@@ -1480,13 +1483,11 @@ namespace RH_RTC_Grab
         private string __file_name = "";
         private string __task_id = "";
         StringBuilder __csv_mb = new StringBuilder();
-        StringBuilder __csv_memberrregister_custom_mb = new StringBuilder();
 
-        private async void __GetMABListsAsync()
+        private async void ___GetMABListsAsync()
         {
             try
             {
-                // status
                 var cookie = Cookie.GetCookieInternal(webBrowser.Url, false);
                 WebClient wc = new WebClient();
 
@@ -1494,83 +1495,188 @@ namespace RH_RTC_Grab
                 wc.Encoding = Encoding.UTF8;
                 wc.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
 
-                var reqparm_gettotal = new NameValueCollection
+                byte[] result = await wc.DownloadDataTaskAsync("http://rh893sh3d.7799779.com/_xLhPnNlm9H0ifrRhPnNlm9H0ifrRZZ/adm/player/xml_player_search.aspx?str=&by=email&orderby=joindate&sortorder=desc&fromrow=0&torow=500000");
+                string responsebody = Encoding.UTF8.GetString(result);
+                var xDoc = XDocument.Parse(responsebody);
+
+                var emptyElements = xDoc.Descendants("search");
+                int count = 0;
+
+                foreach (var xe in emptyElements)
                 {
-                    { "s_btype", ""},
-                    { "skip", "0"},
-                    { "groupid", "0"},
-                    { "s_type", "1"},
-                    { "s_status_search", ""},
-                    { "s_keyword", ""},
-                    { "s_playercurrency", "ALL"},
-                    { "s_phone", "on"},
-                    { "s_email", "on"},
-                    { "data[0][name]", "sEcho"},
-                    { "data[0][value]", __secho++.ToString()},
-                    { "data[1][name]", "iColumns"},
-                    { "data[1][value]", "13"},
-                    { "data[2][name]", "sColumns"},
-                    { "data[2][value]", ""},
-                    { "data[3][name]", "iDisplayStart"},
-                    { "data[3][value]", "0"},
-                    { "data[4][name]", "iDisplayLength"},
-                    { "data[4][value]", "1"}
-                };
+                    string player_id = xe.Attribute("id").Value.Trim();
+                    string username = xe.Attribute("username").Value.Trim();
+                    string result_count = xe.Attribute("resultCount").Value.Trim();
+                    string mab = await ___PlayerListMABAsync(player_id);
 
-                byte[] result_gettotal = await wc.UploadValuesTaskAsync("http://cs.ying168.bet/player/listAjax1", "POST", reqparm_gettotal);
-                string responsebody_gettotatal = Encoding.UTF8.GetString(result_gettotal);
-                var deserializeObject_gettotal = JsonConvert.DeserializeObject(responsebody_gettotatal);
-                JObject jo_gettotal = JObject.Parse(deserializeObject_gettotal.ToString());
-                JToken jt_gettotal = jo_gettotal.SelectToken("$.iTotalRecords");
-                __total_records_mb += double.Parse(jt_gettotal.ToString());
-                double get_total_records = 0;
-                get_total_records = double.Parse(jt_gettotal.ToString());
+                    count++;
 
-                double result_total_records = get_total_records / __display_length_mb;
+                    if (count == 1)
+                    {
+                        var header = string.Format("{0},{1},{2}", "Brand", "Username", "Main Account Balance");
+                        __csv_mb.AppendLine(header);
+                    }
 
-                if (result_total_records.ToString().Contains("."))
+                    var newLine = string.Format("{0},{1},{2}", __brand_code, "\"" + username + "\"", "\"" + mab + "\"");
+                    __csv_mb.AppendLine(newLine);
+
+                    label_currentrecord.Text = Convert.ToInt32(count).ToString("N0") + " of " + Convert.ToInt32(result_count).ToString("N0");
+                    label_currentrecord.Invalidate();
+                    label_currentrecord.Update();
+                }
+
+                ___PlayerListInsertDoneMABAsync();
+            }
+            catch (Exception err)
+            {
+                __send++;
+                if (__send == 5)
                 {
-                    __total_page_mb += Convert.ToInt32(Math.Floor(result_total_records)) + 1;
+                    SendITSupport("There's a problem to the server, please re-open the application.");
+                    SendMyBot(err.ToString());
+
+                    __isClose = false;
+                    Environment.Exit(0);
                 }
                 else
                 {
-                    __total_page_mb += Convert.ToInt32(Math.Floor(result_total_records));
+                    ___WaitNSeconds(10);
+                    ___GetMABListsAsync();
+                }
+            }
+        }
+
+        private async Task<string> ___PlayerListMABAsync(string id)
+        {
+            try
+            {
+                var cookie = Cookie.GetCookieInternal(webBrowser.Url, false);
+                WebClient wc = new WebClient();
+                wc.Headers.Add("Cookie", cookie);
+                wc.Encoding = Encoding.UTF8;
+                wc.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+                string date_to = DateTime.Now.ToString("yyyy-MM-dd");
+                string date_from = DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd");
+                string responsebody = await wc.DownloadStringTaskAsync("http://rh893sh3d.7799779.com/_xLhPnNlm9H0ifrRhPnNlm9H0ifrRZZ/adm/player/inc_player_profile.aspx?id=" + id);
+                
+                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(@responsebody);
+                var rows = doc.DocumentNode.SelectNodes("//*[@class='listTable2']/tr");
+
+                foreach (var row in rows)
+                {
+                    string td = row.InnerHtml;
+                    string mab_innettext = row.SelectSingleNode("td[1]").InnerText;
+                    if (mab_innettext.ToLower().Trim() == "account balance:")
+                    {
+                        string mab = row.SelectSingleNode("td[2]").InnerText.Replace("&nbsp;", "").Trim();
+                        return mab;
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                if (__isLogin)
+                {
+                    await ___PlayerListMABAsync(id);
+                }
+            }
+
+            return null;
+        }
+        
+        private async void ___PlayerListInsertDoneMABAsync()
+        {
+            try
+            {
+                string _path = "\\\\192.168.10.252\\Balance$\\";
+                string _current_datetime = DateTime.Now.ToString("yyyy-MM-ddHHmm");
+                __file_name = __brand_code + "_" + _current_datetime;
+                string _folder_path_result = _path + __brand_code + "_" + _current_datetime + ".txt";
+                string _folder_path_result_xlsx = _path + __brand_code + "_" + _current_datetime + ".xlsx";
+
+                if (File.Exists(_folder_path_result))
+                {
+                    File.Delete(_folder_path_result);
                 }
 
-                label_page_count.Text = "0 of " + __total_page_mb.ToString("N0");
-                label_currentrecord.Text = "0 of " + Convert.ToInt32(__total_records_mb).ToString("N0");
-
-                var reqparm = new NameValueCollection
+                if (File.Exists(_folder_path_result_xlsx))
                 {
-                    { "s_btype", ""},
-                    { "skip", "0"},
-                    { "groupid", "0"},
-                    { "s_type", "1"},
-                    { "s_status_search", ""},
-                    { "s_keyword", ""},
-                    { "s_playercurrency", "ALL"},
-                    { "data[0][name]", "sEcho"},
-                    { "data[0][value]", __secho++.ToString()},
-                    { "data[1][name]", "iColumns"},
-                    { "data[1][value]", "13"},
-                    { "data[2][name]", "sColumns"},
-                    { "data[2][value]", ""},
-                    { "data[3][name]", "iDisplayStart"},
-                    { "data[3][value]", "0"},
-                    { "data[4][name]", "iDisplayLength"},
-                    { "data[4][value]", __display_length_mb.ToString()}
-                };
+                    File.Delete(_folder_path_result_xlsx);
+                }
 
-                byte[] result = await wc.UploadValuesTaskAsync("http://cs.ying168.bet/player/listAjax1", "POST", reqparm);
-                string responsebody = Encoding.UTF8.GetString(result);
-                var deserializeObject = JsonConvert.DeserializeObject(responsebody);
+                __csv_mb.ToString().Reverse();
+                File.WriteAllText(_folder_path_result, __csv_mb.ToString(), Encoding.UTF8);
 
-                __jo_mb = JObject.Parse(deserializeObject.ToString());
-                JToken count = __jo_mb.SelectToken("$.aaData");
-                __result_count_json_mb = count.Count();
+                Excel.Application app = new Excel.Application();
+                Excel.Workbook wb = app.Workbooks.Open(_folder_path_result, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+                Excel.Worksheet worksheet = wb.ActiveSheet;
+                worksheet.Activate();
+                worksheet.Application.ActiveWindow.SplitRow = 1;
+                worksheet.Application.ActiveWindow.FreezePanes = true;
+                Excel.Range firstRow = (Excel.Range)worksheet.Rows[1];
+                firstRow.AutoFilter(1,
+                                    Type.Missing,
+                                    Excel.XlAutoFilterOperator.xlAnd,
+                                    Type.Missing,
+                                    true);
+                Excel.Range usedRange = worksheet.UsedRange;
+                Excel.Range rows = usedRange.Rows;
+                int count = 0;
+                foreach (Excel.Range row in rows)
+                {
+                    if (count == 0)
+                    {
+                        Excel.Range firstCell = row.Cells[1];
 
-                // comment
-                //__MABPlayerListAsync();
+                        string firstCellValue = firstCell.Value as String;
+
+                        if (!string.IsNullOrEmpty(firstCellValue))
+                        {
+                            row.Interior.Color = Color.FromArgb(155, 132, 53);
+                            row.Font.Color = Color.FromArgb(255, 255, 255);
+                        }
+
+                        break;
+                    }
+
+                    count++;
+                }
+                int i;
+                for (i = 1; i <= 3; i++)
+                {
+                    worksheet.Columns[i].ColumnWidth = 22;
+                }
+                wb.SaveAs(_folder_path_result_xlsx, Excel.XlFileFormat.xlOpenXMLWorkbook, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Excel.XlSaveAsAccessMode.xlExclusive, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+                wb.Close();
+                app.Quit();
+                Marshal.ReleaseComObject(app);
+
+                if (File.Exists(_folder_path_result))
+                {
+                    File.Delete(_folder_path_result);
+                }
+
+                __csv_mb.Clear();
+                __total_records_mb = 0;
+                __display_length_mb = 5000;
+                __total_page_mb = 0;
+                __result_count_json_mb = 0;
+                __inserted_in_excel_mb = true;
+                __detect_mb = false;
+                __i_mb = 0;
+                __ii_mb = 0;
+                __pages_count_display_mb = 0;
+                __test_gettotal_count_record_mb = 0;
+                __get_ii_mb = 1;
+                __get_ii_display_mb = 1;
+                __pages_count_mb = 0;
+                label_currentrecord.Text = "";
+                label_page_count.Text = "";
+
+                // send
+                await ___SetTaskStatusAsync(__task_id, __file_name);
+                timer_mb_detect.Start();
             }
             catch (Exception err)
             {
@@ -1591,262 +1697,9 @@ namespace RH_RTC_Grab
             }
         }
 
-        // comment
-        //private async void __MABPlayerListAsync()
-        //{
-        //    if (__inserted_in_excel_mb)
-        //    {
-        //        for (int i = __i_mb; i < __total_page_mb; i++)
-        //        {
-        //            if (!__inserted_in_excel_mb)
-        //            {
-        //                break;
-        //            }
-        //            else
-        //            {
-        //                __i_mb = i;
-        //                __pages_count_display_mb++;
-        //            }
-
-        //            for (int ii = 0; ii < __result_count_json_mb; ii++)
-        //            {
-        //                Application.DoEvents();
-
-        //                if (!__isLogin)
-        //                {
-        //                    __inserted_in_excel_mb = false;
-
-        //                    break;
-        //                }
-
-        //                __test_gettotal_count_record_mb++;
-
-        //                if (__pages_count_display_mb != 0 && __pages_count_display_mb <= __total_page_mb)
-        //                {
-        //                    label_page_count.Text = __pages_count_display_mb.ToString("N0") + " of " + __total_page_mb.ToString("N0");
-        //                }
-
-        //                __ii_mb = ii;
-        //                JToken username__id = __jo_mb.SelectToken("$.aaData[" + ii + "][0]").ToString();
-        //                string username = Regex.Match(username__id.ToString(), "username=\\\"(.*?)\\\"").Groups[1].Value;
-        //                JToken mab = __jo_mb.SelectToken("$.aaData[" + ii + "][6]").ToString().Replace("\"", "");
-
-        //                if (__get_ii_mb == 1)
-        //                {
-        //                    var header = string.Format("{0},{1},{2}", "Brand", "Username", "Main Account Balance");
-        //                    __csv_mb.AppendLine(header);
-        //                }
-
-        //                var newLine = string.Format("{0},{1},{2}", __brand_code, "\"" + username + "\"", "\"" + mab + "\"");
-        //                __csv_mb.AppendLine(newLine);
-
-        //                label_currentrecord.Text = (__get_ii_display_mb).ToString("N0") + " of " + Convert.ToInt32(__total_records_mb).ToString("N0");
-        //                label_currentrecord.Invalidate();
-        //                label_currentrecord.Update();
-
-        //                __get_ii_mb++;
-        //                __get_ii_display_mb++;
-        //            }
-
-        //            __result_count_json_mb = 0;
-
-        //            // web client request
-        //            await __GetDataPagesMABListAsync();
-        //        }
-
-        //        if (__inserted_in_excel_mb)
-        //        {
-        //            __PlayerListInsertDoneMAB();
-        //        }
-        //    }
-        //}
-
-        private async Task __GetDataPagesMABListAsync()
-        {
-            try
-            {
-                var cookie = Cookie.GetCookieInternal(webBrowser.Url, false);
-                WebClient wc = new WebClient();
-
-                wc.Headers.Add("Cookie", cookie);
-                wc.Encoding = Encoding.UTF8;
-                wc.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
-
-                int result_pages;
-
-                if (__detect_mb)
-                {
-                    __detect_mb = false;
-                    result_pages = (Convert.ToInt32(__display_length_mb) * __pages_count_mb);
-                }
-                else
-                {
-                    __pages_count_mb++;
-                    result_pages = (Convert.ToInt32(__display_length_mb) * __pages_count_mb);
-                }
-
-                var reqparm = new NameValueCollection
-                {
-                    { "s_btype", ""},
-                    { "skip", "0"},
-                    { "groupid", "0"},
-                    { "s_type", "1"},
-                    { "s_status_search", ""},
-                    { "s_keyword", ""},
-                    { "s_playercurrency", "ALL"},
-                    { "data[0][name]", "sEcho"},
-                    { "data[0][value]", __secho++.ToString()},
-                    { "data[1][name]", "iColumns"},
-                    { "data[1][value]", "13"},
-                    { "data[2][name]", "sColumns"},
-                    { "data[2][value]", ""},
-                    { "data[3][name]", "iDisplayStart"},
-                    { "data[3][value]", result_pages.ToString()},
-                    { "data[4][name]", "iDisplayLength"},
-                    { "data[4][value]", __display_length_mb.ToString()}
-                };
-
-                byte[] result = await wc.UploadValuesTaskAsync("http://cs.ying168.bet/player/listAjax1", "POST", reqparm);
-                string responsebody = Encoding.UTF8.GetString(result);
-                if (__pages_count_display_mb != __total_page_mb)
-                {
-                    var deserializeObject = JsonConvert.DeserializeObject(responsebody);
-
-                    __jo_mb = JObject.Parse(deserializeObject.ToString());
-                    JToken count = __jo_mb.SelectToken("$.aaData");
-                    __result_count_json_mb = count.Count();
-                }
-                else
-                {
-                    __result_count_json_mb = 0;
-                }
-            }
-            catch (Exception err)
-            {
-                if (__isLogin)
-                {
-                    await __GetDataPagesMABListAsync();
-                }
-            }
-        }
-
-        // comment
-        //private void __PlayerListInsertDoneMAB()
-        //{
-        //    try
-        //    {
-        //        string _path = "\\\\192.168.10.252\\Balance$\\";
-        //        string _current_datetime = DateTime.Now.ToString("yyyy-MM-ddHHmm");
-        //        __file_name = __brand_code + "_" + _current_datetime;
-        //        string _folder_path_result = _path + __brand_code + "_" + _current_datetime + ".txt";
-        //        string _folder_path_result_xlsx = _path + __brand_code + "_" + _current_datetime + ".xlsx";
-
-        //        if (File.Exists(_folder_path_result))
-        //        {
-        //            File.Delete(_folder_path_result);
-        //        }
-
-        //        if (File.Exists(_folder_path_result_xlsx))
-        //        {
-        //            File.Delete(_folder_path_result_xlsx);
-        //        }
-
-        //        __csv_mb.ToString().Reverse();
-        //        File.WriteAllText(_folder_path_result, __csv_mb.ToString(), Encoding.UTF8);
-
-        //        Excel.Application app = new Excel.Application();
-        //        Excel.Workbook wb = app.Workbooks.Open(_folder_path_result, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-        //        Excel.Worksheet worksheet = wb.ActiveSheet;
-        //        worksheet.Activate();
-        //        worksheet.Application.ActiveWindow.SplitRow = 1;
-        //        worksheet.Application.ActiveWindow.FreezePanes = true;
-        //        Excel.Range firstRow = (Excel.Range)worksheet.Rows[1];
-        //        firstRow.AutoFilter(1,
-        //                            Type.Missing,
-        //                            Excel.XlAutoFilterOperator.xlAnd,
-        //                            Type.Missing,
-        //                            true);
-        //        Excel.Range usedRange = worksheet.UsedRange;
-        //        Excel.Range rows = usedRange.Rows;
-        //        int count = 0;
-        //        foreach (Excel.Range row in rows)
-        //        {
-        //            if (count == 0)
-        //            {
-        //                Excel.Range firstCell = row.Cells[1];
-
-        //                string firstCellValue = firstCell.Value as String;
-
-        //                if (!string.IsNullOrEmpty(firstCellValue))
-        //                {
-        //                    row.Interior.Color = Color.FromArgb(222, 30, 112);
-        //                    row.Font.Color = Color.FromArgb(255, 255, 255);
-        //                }
-
-        //                break;
-        //            }
-
-        //            count++;
-        //        }
-        //        int i;
-        //        for (i = 1; i <= 3; i++)
-        //        {
-        //            worksheet.Columns[i].ColumnWidth = 22;
-        //        }
-        //        wb.SaveAs(_folder_path_result_xlsx, Excel.XlFileFormat.xlOpenXMLWorkbook, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Excel.XlSaveAsAccessMode.xlExclusive, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-        //        wb.Close();
-        //        app.Quit();
-        //        Marshal.ReleaseComObject(app);
-
-        //        if (File.Exists(_folder_path_result))
-        //        {
-        //            File.Delete(_folder_path_result);
-        //        }
-
-        //        __csv_mb.Clear();
-        //        __total_records_mb = 0;
-        //        __display_length_mb = 5000;
-        //        __total_page_mb = 0;
-        //        __result_count_json_mb = 0;
-        //        __inserted_in_excel_mb = true;
-        //        __detect_mb = false;
-        //        __i_mb = 0;
-        //        __ii_mb = 0;
-        //        __pages_count_display_mb = 0;
-        //        __test_gettotal_count_record_mb = 0;
-        //        __get_ii_mb = 1;
-        //        __get_ii_display_mb = 1;
-        //        __pages_count_mb = 0;
-        //        __csv_memberrregister_custom_mb.Clear();
-        //        label_currentrecord.Text = "";
-        //        label_page_count.Text = "";
-
-        //        // send
-        //        ___SetTaskStatus(__task_id, __file_name);
-        //    }
-        //    catch (Exception err)
-        //    {
-        //        __send++;
-        //        if (__send == 5)
-        //        {
-        //            SendITSupport("There's a problem to the server, please re-open the application.");
-        //            SendMyBot(err.ToString());
-
-        //            __isClose = false;
-        //            Environment.Exit(0);
-        //        }
-        //        else
-        //        {
-        //            ___WaitNSeconds(10);
-        //            ___GetTaskStatus();
-        //        }
-        //    }
-        //}
-
         private void timer_mb_detect_Tick(object sender, EventArgs e)
         {
-            // comment
-            //___GetTaskStatus();
+            ___GetTaskStatus();
         }
 
         private void ___GetTaskStatus()
@@ -1869,7 +1722,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/getBalanceTaskStatus", "POST", data);
+                    var response = wb.UploadValues("http://192.168.10.252:8080/API/getBalanceTaskStatus", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
                     var deserializeObject = JsonConvert.DeserializeObject(responseInString);
                     JObject jo_mb = JObject.Parse(deserializeObject.ToString());
@@ -1879,12 +1732,12 @@ namespace RH_RTC_Grab
 
                     if (status.ToString() == "1")
                     {
-                        if (webBrowser.Url.ToString() != "http://cs.ying168.bet/account/login")
+                        if (webBrowser.Url.ToString().Contains("adm/default.aspx"))
                         {
                             // start
                             timer_mb_detect.Stop();
-                            __UpdateTaskStatus();
-                            __GetMABListsAsync();
+                            ___UpdateTaskStatus();
+                            ___GetMABListsAsync();
                         }
                         else
                         {
@@ -1939,7 +1792,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/getBalanceTaskStatus", "POST", data);
+                    var response = wb.UploadValues("http://zeus.ssitex.com:8080/API/getBalanceTaskStatus", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
                     var deserializeObject = JsonConvert.DeserializeObject(responseInString);
                     JObject jo_mb = JObject.Parse(deserializeObject.ToString());
@@ -1949,12 +1802,12 @@ namespace RH_RTC_Grab
 
                     if (status.ToString() == "1")
                     {
-                        if (webBrowser.Url.ToString() != "http://cs.ying168.bet/account/login")
+                        if (webBrowser.Url.ToString().Contains("adm/default.aspx"))
                         {
                             // start
                             timer_mb_detect.Stop();
-                            __UpdateTaskStatus();
-                            __GetMABListsAsync();
+                            ___UpdateTaskStatus();
+                            ___GetMABListsAsync();
                         }
                         else
                         {
@@ -1989,7 +1842,7 @@ namespace RH_RTC_Grab
             }
         }
 
-        private void ___SetTaskStatus(string task_id, string file_name)
+        private async Task ___SetTaskStatusAsync(string task_id, string file_name)
         {
             try
             {
@@ -2010,7 +1863,56 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/setBalanceTaskStatus", "POST", data);
+                    var response = await wb.UploadValuesTaskAsync("http://192.168.10.252:8080/API/setBalanceTaskStatus", "POST", data);
+                    string responseInString = Encoding.UTF8.GetString(response);
+
+                    __file_name = "";
+                    __task_id = "";
+                }
+            }
+            catch (Exception err)
+            {
+                if (__isLogin)
+                {
+                    __send++;
+                    if (__send == 5)
+                    {
+                        SendITSupport("There's a problem to the server, please re-open the application.");
+                        SendMyBot(err.ToString());
+
+                        __isClose = false;
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        ___WaitNSeconds(10);
+                        await ___SetTaskStatus2Async(task_id, file_name);
+                    }
+                }
+            }
+        }
+
+        private async Task ___SetTaskStatus2Async(string task_id, string file_name)
+        {
+            try
+            {
+                string password = file_name + task_id + "youdieidie";
+                byte[] encodedPassword = new UTF8Encoding().GetBytes(password);
+                byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encodedPassword);
+                string token = BitConverter.ToString(hash)
+                   .Replace("-", string.Empty)
+                   .ToLower();
+
+                using (var wb = new WebClient())
+                {
+                    var data = new NameValueCollection
+                    {
+                        ["task_id"] = task_id,
+                        ["filename"] = file_name,
+                        ["token"] = token
+                    };
+
+                    var response = await wb.UploadValuesTaskAsync("http://zeus.ssitex.com:8080/API/setBalanceTaskStatus", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
 
                     __file_name = "";
@@ -2034,63 +1936,13 @@ namespace RH_RTC_Grab
                     else
                     {
                         ___WaitNSeconds(10);
-                        ___SetTaskStatus2(task_id, file_name);
+                        await ___SetTaskStatusAsync(task_id, file_name);
                     }
                 }
             }
         }
 
-        private void ___SetTaskStatus2(string task_id, string file_name)
-        {
-            try
-            {
-                string password = file_name + task_id + "youdieidie";
-                byte[] encodedPassword = new UTF8Encoding().GetBytes(password);
-                byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encodedPassword);
-                string token = BitConverter.ToString(hash)
-                   .Replace("-", string.Empty)
-                   .ToLower();
-
-                using (var wb = new WebClient())
-                {
-                    var data = new NameValueCollection
-                    {
-                        ["task_id"] = task_id,
-                        ["filename"] = file_name,
-                        ["token"] = token
-                    };
-
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/setBalanceTaskStatus", "POST", data);
-                    string responseInString = Encoding.UTF8.GetString(response);
-
-                    __file_name = "";
-                    __task_id = "";
-                    timer_mb_detect.Start();
-                }
-            }
-            catch (Exception err)
-            {
-                if (__isLogin)
-                {
-                    __send++;
-                    if (__send == 5)
-                    {
-                        SendITSupport("There's a problem to the server, please re-open the application.");
-                        SendMyBot(err.ToString());
-
-                        __isClose = false;
-                        Environment.Exit(0);
-                    }
-                    else
-                    {
-                        ___WaitNSeconds(10);
-                        ___SetTaskStatus(task_id, file_name);
-                    }
-                }
-            }
-        }
-
-        private void __UpdateTaskStatus()
+        private void ___UpdateTaskStatus()
         {
             try
             {
@@ -2110,7 +1962,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/updBalanceTaskStatus", "POST", data);
+                    var response = wb.UploadValues("http://192.168.10.252:8080/API/updBalanceTaskStatus", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
                 }
             }
@@ -2130,13 +1982,13 @@ namespace RH_RTC_Grab
                     else
                     {
                         ___WaitNSeconds(10);
-                        __UpdateTaskStatus2();
+                        ___UpdateTaskStatus2();
                     }
                 }
             }
         }
 
-        private void __UpdateTaskStatus2()
+        private void ___UpdateTaskStatus2()
         {
             try
             {
@@ -2156,7 +2008,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/updBalanceTaskStatus", "POST", data);
+                    var response = wb.UploadValues("http://zeus.ssitex.com:8080/API/updBalanceTaskStatus", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
                 }
             }
@@ -2176,7 +2028,7 @@ namespace RH_RTC_Grab
                     else
                     {
                         ___WaitNSeconds(10);
-                        __UpdateTaskStatus();
+                        ___UpdateTaskStatus();
                     }
                 }
             }
@@ -2239,7 +2091,7 @@ namespace RH_RTC_Grab
 
         private void timer_detect_running_Tick(object sender, EventArgs e)
         {
-            ___DetectRunning();
+            //___DetectRunning();
         }
 
         private void ___DetectRunning()
@@ -2264,7 +2116,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/updateAppStatus", "POST", data);
+                    var response = wb.UploadValues("http://192.168.10.252:8080/API/updateAppStatus", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
                 }
             }
@@ -2313,7 +2165,7 @@ namespace RH_RTC_Grab
                         ["token"] = token
                     };
 
-                    var response = wb.UploadValues("http://192.168.10.252:8080/zeus2/API/updateAppStatus", "POST", data);
+                    var response = wb.UploadValues("http://zeus.ssitex.com:8080/API/updateAppStatus", "POST", data);
                     string responseInString = Encoding.UTF8.GetString(response);
                 }
             }
