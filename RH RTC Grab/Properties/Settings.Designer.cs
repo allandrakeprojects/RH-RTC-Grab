@@ -94,5 +94,17 @@ namespace RH_RTC_Grab.Properties {
                 this["______server_location"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ______is_send_telegram {
+            get {
+                return ((bool)(this["______is_send_telegram"]));
+            }
+            set {
+                this["______is_send_telegram"] = value;
+            }
+        }
     }
 }

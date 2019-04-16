@@ -33,7 +33,6 @@ namespace RH_RTC_Grab
         private bool __isLogin = false;
         private bool __isStart = false;
         private bool __isBreak = false;
-        private bool __is_send = false;
         private string __playerlist_cn;
         private string __playerlist_ea;
         private string __playerlist_qq;
@@ -325,7 +324,7 @@ namespace RH_RTC_Grab
                                 SendMyBot("The application have been logout, please re-login again.");
                                 __send = 0;
 
-                                if (__is_send)
+                                if (!Properties.Settings.Default.______is_send_telegram)
                                 {
                                     __isClose = false;
                                     Environment.Exit(0);
@@ -415,7 +414,7 @@ namespace RH_RTC_Grab
                 wc.Encoding = Encoding.UTF8;
                 wc.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
 
-                byte[] result = await wc.DownloadDataTaskAsync("http://rh893sh3d.7799779.com/_xLhPnNlm9H0ifrRhPnNlm9H0ifrRZZ/adm/player/xml_player_search.aspx?str=&by=email&orderby=joindate&sortorder=desc&fromrow=0&torow=5000 ");
+                byte[] result = await wc.DownloadDataTaskAsync("http://rh893sh3d.7799779.com/_xLhPnNlm9H0ifrRhPnNlm9H0ifrRZZ/adm/player/xml_player_search.aspx?str=&by=email&orderby=joindate&sortorder=desc&fromrow=0&torow=500");
                 string responsebody = Encoding.UTF8.GetString(result);
                 var xDoc = XDocument.Parse(responsebody);
 
@@ -530,7 +529,7 @@ namespace RH_RTC_Grab
                                 //{
                                 //    file.WriteLine(_username + "*|*" + _name + "*|*" + _date_register + "*|*" + _date_deposit + "*|*" + _cn + "*|*" + _email + "*|*" + _agent + "*|*" + _qq + "*|*" + __brand_code);
                                 //}
-                                // update 01/11/2018
+                                // update 01/11/2019
                                 try
                                 {
                                     if (!__isSending)
@@ -846,7 +845,7 @@ namespace RH_RTC_Grab
                 wc.Encoding = Encoding.UTF8;
                 wc.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
 
-                byte[] result = await wc.DownloadDataTaskAsync("http://rh893sh3d.7799779.com/_xLhPnNlm9H0ifrRhPnNlm9H0ifrRZZ/adm/player/xml_player_search.aspx?str=&by=email&orderby=joindate&sortorder=desc&fromrow=0&torow=5000 ");
+                byte[] result = await wc.DownloadDataTaskAsync("http://rh893sh3d.7799779.com/_xLhPnNlm9H0ifrRhPnNlm9H0ifrRZZ/adm/player/xml_player_search.aspx?str=&by=email&orderby=joindate&sortorder=desc&fromrow=0&torow=500");
                 string responsebody = Encoding.UTF8.GetString(result);
                 var xDoc = XDocument.Parse(responsebody);
 
@@ -1271,7 +1270,7 @@ namespace RH_RTC_Grab
 
         private void SendITSupport(string message)
         {
-            if (__is_send)
+            if (Properties.Settings.Default.______is_send_telegram)
             {
                 try
                 {
@@ -2077,21 +2076,23 @@ namespace RH_RTC_Grab
 
         private void panel1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (__is_send)
+            if (Properties.Settings.Default.______is_send_telegram)
             {
-                __is_send = false;
+                Properties.Settings.Default.______is_send_telegram = false;
+                Properties.Settings.Default.Save();
                 MessageBox.Show("Telegram Notification is Disabled.", __brand_code + " " + __app, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                __is_send = true;
+                Properties.Settings.Default.______is_send_telegram = true;
+                Properties.Settings.Default.Save();
                 MessageBox.Show("Telegram Notification is Enabled.", __brand_code + " " + __app, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         private void timer_detect_running_Tick(object sender, EventArgs e)
         {
-            //___DetectRunning();
+            ___DetectRunning();
         }
 
         private void ___DetectRunning()
